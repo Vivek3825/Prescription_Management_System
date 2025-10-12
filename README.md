@@ -12,6 +12,8 @@
 		6.Contact No.
 		7.Email ID
 		8.Medical Condition
+		9.Calculate BMI (BMI = weight (kg) / (height (m))^2)
+		(Arrange this info sequentially in order)
 ```
 
 ## 2. Prescription Management:- (Has two methods)
