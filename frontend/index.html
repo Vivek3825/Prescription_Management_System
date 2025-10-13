@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrescripCare - Advanced Prescription Management</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Landing Page -->
+    <div class="landing-page" id="landingPage">
+        <div class="hero-section">
+            <div class="hero-background">
+                <div class="floating-pills">
+                    <div class="pill pill-1"></div>
+                    <div class="pill pill-2"></div>
+                    <div class="pill pill-3"></div>
+                    <div class="pill pill-4"></div>
+                    <div class="pill pill-5"></div>
+                </div>
+            </div>
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <i class="fas fa-prescription-bottle-alt"></i>
+                    <span>PrescripCare</span>
+                </div>
+                <div class="nav-buttons">
+                    <button class="btn-secondary" onclick="showLogin()">Login</button>
+                    <button class="btn-primary" onclick="showSignup()">Get Started</button>
+                </div>
+            </nav>
+            
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Advanced Prescription
+                    <span class="gradient-text">Management System</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Track medications, monitor interactions, and never miss a dose with our intelligent healthcare companion
+                </p>
+                <div class="hero-features">
+                    <div class="feature-item">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Smart Dose Tracking</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-bell"></i>
+                        <span>Automatic Reminders</span>
+                    </div>
+                    <div class="feature-item">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Drug Interaction Alerts</span>
+                    </div>
+                </div>
+                <button class="cta-button" onclick="showSignup()">
+                    Start Your Health Journey
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-container">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div class="modal-header">
+                <h2>Welcome Back</h2>
+                <p>Sign in to your PrescripCare account</p>
+            </div>
+            <form class="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn-primary full-width">Sign In</button>
+                <p class="form-footer">
+                    Don't have an account? 
+                    <a href="#" onclick="showSignup()">Sign up here</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Signup Modal -->
+    <div class="modal-overlay" id="signupModal">
+        <div class="modal-container signup-modal">
+            <button class="modal-close" onclick="closeModal()">&times;</button>
+            <div class="modal-header">
+                <h2>Create Your Account</h2>
+                <p>Join PrescripCare for better health management</p>
+            </div>
+            <form class="signup-form" onsubmit="handleSignup(event)">
+                <div class="form-steps">
+                    <div class="step-indicator">
+                        <div class="step active" data-step="1">1</div>
+                        <div class="step" data-step="2">2</div>
+                        <div class="step" data-step="3">3</div>
+                    </div>
+                </div>
+
+                <!-- Step 1: Basic Information -->
+                <div class="form-step active" data-step="1">
+                    <h3>Basic Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="fullName">Full Name *</label>
+                            <input type="text" id="fullName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="age">Age *</label>
+                            <input type="number" id="age" min="1" max="120" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="gender">Gender *</label>
+                            <select id="gender" required>
+                                <option value="">Select Gender</option>
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="contactNo">Contact Number *</label>
+                            <input type="tel" id="contactNo" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" required>
+                    </div>
+                </div>
+
+                <!-- Step 2: Physical Information -->
+                <div class="form-step" data-step="2">
+                    <h3>Physical Information</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="weight">Weight (kg) *</label>
+                            <input type="number" id="weight" step="0.1" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="height">Height (cm) *</label>
+                            <input type="number" id="height" min="50" max="300" required>
+                        </div>
+                    </div>
+                    <div class="bmi-display">
+                        <div class="bmi-card">
+                            <h4>BMI Calculator</h4>
+                            <div class="bmi-result" id="bmiResult">
+                                <span class="bmi-value">--</span>
+                                <span class="bmi-category">Enter weight and height</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Medical Information -->
+                <div class="form-step" data-step="3">
+                    <h3>Medical Information</h3>
+                    <div class="form-group">
+                        <label for="medicalCondition">Medical Conditions</label>
+                        <textarea id="medicalCondition" rows="4" placeholder="Please describe any existing medical conditions, allergies, or health concerns..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Create Password *</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password *</label>
+                        <input type="password" id="confirmPassword" required>
+                    </div>
+                </div>
+
+                <div class="form-navigation">
+                    <button type="button" class="btn-secondary" id="prevBtn" onclick="previousStep()" style="display: none;">Previous</button>
+                    <button type="button" class="btn-primary" id="nextBtn" onclick="nextStep()">Next</button>
+                    <button type="submit" class="btn-primary" id="submitBtn" style="display: none;">Create Account</button>
+                </div>
+
+                <p class="form-footer">
+                    Already have an account? 
+                    <a href="#" onclick="showLogin()">Sign in here</a>
+                </p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard" id="dashboard" style="display: none;">
+        <nav class="dashboard-nav">
+            <div class="nav-brand">
+                <i class="fas fa-prescription-bottle-alt"></i>
+                <span>PrescripCare</span>
+            </div>
+            <div class="nav-user">
+                <div class="user-info">
+                    <span class="user-name" id="userName">John Doe</span>
+                    <span class="user-status">Active</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </nav>
+
+        <div class="dashboard-container">
+            <aside class="sidebar">
+                <div class="sidebar-menu">
+                    <div class="menu-item active" data-tab="overview">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Overview</span>
+                    </div>
+                    <div class="menu-item" data-tab="medications">
+                        <i class="fas fa-pills"></i>
+                        <span>Medications</span>
+                    </div>
+                    <div class="menu-item" data-tab="calendar">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>Dose Calendar</span>
+                    </div>
+                    <div class="menu-item" data-tab="interactions">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Drug Interactions</span>
+                    </div>
+                    <div class="menu-item" data-tab="lifestyle">
+                        <i class="fas fa-heart"></i>
+                        <span>Lifestyle & Diet</span>
+                    </div>
+                    <div class="menu-item" data-tab="profile">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="main-content">
+                <!-- Overview Tab -->
+                <div class="tab-content active" id="overview">
+                    <div class="page-header">
+                        <h1>Health Overview</h1>
+                        <p>Your medication and health summary</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-pills"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Active Medications</h3>
+                                <span class="stat-number">5</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Doses Taken Today</h3>
+                                <span class="stat-number">8/10</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar-day"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Streak Days</h3>
+                                <span class="stat-number">15</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Next Dose</h3>
+                                <span class="stat-number">2:30 PM</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <h3>Today's Schedule</h3>
+                            <div class="medication-schedule">
+                                <div class="schedule-item taken">
+                                    <div class="schedule-time">8:00 AM</div>
+                                    <div class="schedule-med">Metformin 500mg</div>
+                                    <div class="schedule-status">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                </div>
+                                <div class="schedule-item taken">
+                                    <div class="schedule-time">12:00 PM</div>
+                                    <div class="schedule-med">Vitamin D3</div>
+                                    <div class="schedule-status">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                </div>
+                                <div class="schedule-item upcoming">
+                                    <div class="schedule-time">2:30 PM</div>
+                                    <div class="schedule-med">Lisinopril 10mg</div>
+                                    <div class="schedule-status">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                </div>
+                                <div class="schedule-item upcoming">
+                                    <div class="schedule-time">8:00 PM</div>
+                                    <div class="schedule-med">Metformin 500mg</div>
+                                    <div class="schedule-status">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="dashboard-card">
+                            <h3>Recent Notifications</h3>
+                            <div class="notifications-list">
+                                <div class="notification-item">
+                                    <i class="fas fa-bell text-primary"></i>
+                                    <div class="notification-content">
+                                        <p>Time to take your Lisinopril</p>
+                                        <span>In 30 minutes</span>
+                                    </div>
+                                </div>
+                                <div class="notification-item">
+                                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                                    <div class="notification-content">
+                                        <p>Potential interaction detected</p>
+                                        <span>2 hours ago</span>
+                                    </div>
+                                </div>
+                                <div class="notification-item">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <div class="notification-content">
+                                        <p>All morning doses completed</p>
+                                        <span>4 hours ago</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medications Tab -->
+                <div class="tab-content" id="medications">
+                    <div class="page-header">
+                        <h1>My Medications</h1>
+                        <button class="btn-primary" onclick="showAddMedication()">
+                            <i class="fas fa-plus"></i>
+                            Add Medication
+                        </button>
+                    </div>
+
+                    <div class="medications-grid">
+                        <div class="medication-card">
+                            <div class="med-header">
+                                <h3>Metformin</h3>
+                                <span class="med-strength">500mg</span>
+                            </div>
+                            <div class="med-info">
+                                <div class="med-detail">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Twice daily</span>
+                                </div>
+                                <div class="med-detail">
+                                    <i class="fas fa-utensils"></i>
+                                    <span>With meals</span>
+                                </div>
+                            </div>
+                            <div class="med-actions">
+                                <button class="btn-icon" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-icon" title="Drug Info">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="medication-card">
+                            <div class="med-header">
+                                <h3>Lisinopril</h3>
+                                <span class="med-strength">10mg</span>
+                            </div>
+                            <div class="med-info">
+                                <div class="med-detail">
+                                    <i class="fas fa-clock"></i>
+                                    <span>Once daily</span>
+                                </div>
+                                <div class="med-detail">
+                                    <i class="fas fa-moon"></i>
+                                    <span>Evening</span>
+                                </div>
+                            </div>
+                            <div class="med-actions">
+                                <button class="btn-icon" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-icon" title="Drug Info">
+                                    <i class="fas fa-info-circle"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar Tab -->
+                <div class="tab-content" id="calendar">
+                    <div class="page-header">
+                        <h1>Dose Tracking Calendar</h1>
+                        <div class="calendar-controls">
+                            <button class="btn-icon" onclick="previousMonth()">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span class="current-month" id="currentMonth">October 2025</span>
+                            <button class="btn-icon" onclick="nextMonth()">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="calendar-legend">
+                        <div class="legend-item">
+                            <div class="legend-color taken"></div>
+                            <span>Taken</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color missed"></div>
+                            <span>Missed</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color snoozed"></div>
+                            <span>Snoozed</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color partial"></div>
+                            <span>Partial</span>
+                        </div>
+                    </div>
+
+                    <div class="calendar-container">
+                        <div class="calendar" id="doseCalendar">
+                            <!-- Calendar will be generated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="day-counter">
+                        <div class="counter-card">
+                            <h3>Adherence Streak</h3>
+                            <div class="counter-display">
+                                <span class="counter-number">15</span>
+                                <span class="counter-label">Days</span>
+                            </div>
+                        </div>
+                        <div class="counter-card">
+                            <h3>This Month</h3>
+                            <div class="counter-display">
+                                <span class="counter-number">89%</span>
+                                <span class="counter-label">Adherence</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Drug Interactions Tab -->
+                <div class="tab-content" id="interactions">
+                    <div class="page-header">
+                        <h1>Drug Interactions & Information</h1>
+                        <button class="btn-primary" onclick="checkInteractions()">
+                            <i class="fas fa-search"></i>
+                            Check All Interactions
+                        </button>
+                    </div>
+
+                    <div class="interaction-alerts">
+                        <div class="alert-card warning">
+                            <div class="alert-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="alert-content">
+                                <h3>Moderate Interaction Detected</h3>
+                                <p>Metformin and Alcohol may increase risk of lactic acidosis</p>
+                                <div class="alert-actions">
+                                    <button class="btn-text">Learn More</button>
+                                    <button class="btn-text">Dismiss</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="drug-info-search">
+                        <div class="search-container">
+                            <input type="text" placeholder="Search for drug information..." class="search-input" id="drugSearchInput" oninput="searchDrugs()">
+                            <button class="search-btn" onclick="searchDrugs()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="drug-info-grid">
+                        <div class="drug-info-card">
+                            <h3>Metformin</h3>
+                            <div class="drug-details">
+                                <div class="drug-detail">
+                                    <strong>Class:</strong> Biguanide
+                                </div>
+                                <div class="drug-detail">
+                                    <strong>Uses:</strong> Type 2 Diabetes
+                                </div>
+                                <div class="drug-detail">
+                                    <strong>Common Side Effects:</strong> Nausea, diarrhea, stomach upset
+                                </div>
+                            </div>
+                            <button class="btn-text">View Full Information</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lifestyle & Diet Tab -->
+                <div class="tab-content" id="lifestyle">
+                    <div class="page-header">
+                        <h1>Lifestyle Changes & Diet Plans</h1>
+                        <p>Personalized recommendations for better health</p>
+                    </div>
+
+                    <div class="lifestyle-sections">
+                        <div class="section-card">
+                            <h3>
+                                <i class="fas fa-apple-alt"></i>
+                                Dietary Recommendations
+                            </h3>
+                            <div class="recommendations-list">
+                                <div class="recommendation-item">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <span>Increase fiber intake to 25-30g daily</span>
+                                </div>
+                                <div class="recommendation-item">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <span>Limit processed foods and added sugars</span>
+                                </div>
+                                <div class="recommendation-item">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    <span>Choose lean proteins like fish and poultry</span>
+                                </div>
+                                <div class="recommendation-item">
+                                    <i class="fas fa-exclamation-circle text-warning"></i>
+                                    <span>Monitor sodium intake due to blood pressure medication</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-card">
+                            <h3>
+                                <i class="fas fa-running"></i>
+                                Exercise Plan
+                            </h3>
+                            <div class="exercise-plan">
+                                <div class="exercise-week">
+                                    <h4>Weekly Schedule</h4>
+                                    <div class="exercise-days">
+                                        <div class="exercise-day">
+                                            <strong>Mon, Wed, Fri:</strong> 30 min cardio
+                                        </div>
+                                        <div class="exercise-day">
+                                            <strong>Tue, Thu:</strong> Strength training
+                                        </div>
+                                        <div class="exercise-day">
+                                            <strong>Sat:</strong> Yoga or stretching
+                                        </div>
+                                        <div class="exercise-day">
+                                            <strong>Sun:</strong> Rest day
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-card">
+                            <h3>
+                                <i class="fas fa-moon"></i>
+                                Sleep & Wellness
+                            </h3>
+                            <div class="wellness-tips">
+                                <div class="tip-item">
+                                    <h4>Sleep Schedule</h4>
+                                    <p>Aim for 7-9 hours of sleep nightly. Try to sleep and wake at consistent times.</p>
+                                </div>
+                                <div class="tip-item">
+                                    <h4>Stress Management</h4>
+                                    <p>Practice deep breathing, meditation, or mindfulness for 10-15 minutes daily.</p>
+                                </div>
+                                <div class="tip-item">
+                                    <h4>Hydration</h4>
+                                    <p>Drink 8-10 glasses of water daily, more if you exercise regularly.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-card">
+                            <h3>
+                                <i class="fas fa-chart-line"></i>
+                                Progress Tracking
+                            </h3>
+                            <div class="progress-metrics">
+                                <div class="metric">
+                                    <div class="metric-label">BMI Goal Progress</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 60%;"></div>
+                                    </div>
+                                    <div class="metric-value">24.2 / 22.0 target</div>
+                                </div>
+                                <div class="metric">
+                                    <div class="metric-label">Weekly Exercise Goal</div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 80%;"></div>
+                                    </div>
+                                    <div class="metric-value">4/5 sessions completed</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Tab -->
+                <div class="tab-content" id="profile">
+                    <div class="page-header">
+                        <h1>My Profile</h1>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn-secondary" onclick="viewHealthcareProviders()">
+                                <i class="fas fa-user-md"></i>
+                                Providers
+                            </button>
+                            <button class="btn-primary" onclick="editProfile()">
+                                <i class="fas fa-edit"></i>
+                                Edit Profile
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="profile-container">
+                        <div class="profile-card">
+                            <div class="profile-avatar">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="profile-info">
+                                <h2 id="profileName">John Doe</h2>
+                                <p class="profile-email" id="profileEmail">john.doe@email.com</p>
+                            </div>
+                        </div>
+
+                        <div class="profile-details">
+                            <div class="detail-section">
+                                <h3>Personal Information</h3>
+                                <div class="detail-grid">
+                                    <div class="detail-item">
+                                        <label>Age</label>
+                                        <span id="profileAge">32 years</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <label>Gender</label>
+                                        <span id="profileGender">Male</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <label>Contact</label>
+                                        <span id="profileContact">+1 234 567 8900</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <label>BMI</label>
+                                        <span id="profileBMI">24.2 (Normal)</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="detail-section">
+                                <h3>Physical Measurements</h3>
+                                <div class="detail-grid">
+                                    <div class="detail-item">
+                                        <label>Height</label>
+                                        <span id="profileHeight">175 cm</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <label>Weight</label>
+                                        <span id="profileWeight">74 kg</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="detail-section">
+                                <h3>Medical Information</h3>
+                                <div class="medical-conditions" id="profileMedical">
+                                    <p>Type 2 Diabetes, Hypertension</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="csv-data-access.js"></script>
+    <script src="script.js"></script>
+    <script src="demo.js"></script>
+</body>
+</html>
