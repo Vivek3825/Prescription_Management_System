@@ -1,0 +1,44 @@
+{
+  "database_info": {
+    "name": "PrescripCare_Local_Demo",
+    "version": "1.0.0",
+    "type": "CSV_JSON_Local",
+    "created_date": "2025-10-13",
+    "description": "Local demo database for Prescription Management System"
+  },
+  "connection_settings": {
+    "data_path": "./database/",
+    "encoding": "utf-8",
+    "delimiter": ",",
+    "quote_char": "\"",
+    "escape_char": "\\",
+    "line_terminator": "\n"
+  },
+  "file_locations": {
+    "core_tables": "./core_tables/",
+    "master_data": "./master_data/",
+    "user_data": "./user_data/",
+    "analytics": "./analytics/",
+    "config": "./config/"
+  },
+  "data_format": {
+    "date_format": "YYYY-MM-DD",
+    "datetime_format": "YYYY-MM-DD HH:mm:ss",
+    "time_format": "HH:mm:ss",
+    "decimal_places": 2,
+    "boolean_format": ["true", "false"],
+    "null_representation": "NULL"
+  },
+  "performance_settings": {
+    "max_file_size_mb": 50,
+    "chunk_size": 10000,
+    "index_columns": true,
+    "compress_data": false
+  },
+  "backup_settings": {
+    "auto_backup": true,
+    "backup_frequency": "daily",
+    "retention_days": 30,
+    "backup_location": "./backups/"
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "table_schemas": {
+    "users": {
+      "primary_key": "user_id",
+      "columns": {
+        "user_id": {"type": "UUID", "required": true, "unique": true},
+        "email": {"type": "VARCHAR(255)", "required": true, "unique": true},
+        "password_hash": {"type": "VARCHAR(255)", "required": true},
+        "email_verified": {"type": "BOOLEAN", "default": false},
+        "account_status": {"type": "ENUM", "values": ["active", "suspended", "deactivated"], "default": "active"},
+        "two_factor_enabled": {"type": "BOOLEAN", "default": false},
+        "created_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"},
+        "updated_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"},
+        "last_login": {"type": "TIMESTAMP", "nullable": true},
+        "login_attempts": {"type": "INTEGER", "default": 0},
+        "locked_until": {"type": "TIMESTAMP", "nullable": true}
+      },
+      "relationships": {
+        "user_profiles": {"type": "one_to_one", "foreign_key": "user_id"},
+        "user_medications": {"type": "one_to_many", "foreign_key": "user_id"}
+      }
+    },
+    "user_profiles": {
+      "primary_key": "profile_id",
+      "columns": {
+        "profile_id": {"type": "UUID", "required": true, "unique": true},
+        "user_id": {"type": "UUID", "required": true, "foreign_key": "users.user_id"},
+        "first_name": {"type": "VARCHAR(100)", "required": true},
+        "last_name": {"type": "VARCHAR(100)", "required": true},
+        "date_of_birth": {"type": "DATE", "required": true},
+        "gender": {"type": "ENUM", "values": ["male", "female", "other", "prefer_not_to_say"], "required": true},
+        "phone_number": {"type": "VARCHAR(20)", "nullable": true},
+        "emergency_contact_name": {"type": "VARCHAR(200)", "nullable": true},
+        "emergency_contact_phone": {"type": "VARCHAR(20)", "nullable": true},
+        "height_cm": {"type": "INTEGER", "min": 1, "max": 300},
+        "weight_kg": {"type": "DECIMAL(5,2)", "min": 0.1, "max": 999.99},
+        "blood_type": {"type": "ENUM", "values": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"]},
+        "address_line1": {"type": "VARCHAR(255)", "nullable": true},
+        "city": {"type": "VARCHAR(100)", "nullable": true},
+        "state_province": {"type": "VARCHAR(100)", "nullable": true},
+        "postal_code": {"type": "VARCHAR(20)", "nullable": true},
+        "country": {"type": "VARCHAR(100)", "nullable": true},
+        "timezone": {"type": "VARCHAR(50)", "default": "UTC"},
+        "preferred_language": {"type": "VARCHAR(10)", "default": "en"},
+        "created_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"},
+        "updated_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"}
+      }
+    },
+    "drugs_master": {
+      "primary_key": "drug_id",
+      "columns": {
+        "drug_id": {"type": "UUID", "required": true, "unique": true},
+        "drug_name": {"type": "VARCHAR(200)", "required": true},
+        "generic_name": {"type": "VARCHAR(200)", "nullable": true},
+        "brand_names": {"type": "JSON", "description": "Array of brand names"},
+        "drug_class": {"type": "VARCHAR(100)", "nullable": true},
+        "therapeutic_category": {"type": "VARCHAR(100)", "nullable": true},
+        "active_ingredients": {"type": "JSON", "description": "Array of active ingredients with strengths"},
+        "available_strengths": {"type": "JSON", "description": "Array of available strengths"},
+        "dosage_forms": {"type": "JSON", "description": "tablets, capsules, liquid, etc."},
+        "route_of_administration": {"type": "JSON", "description": "oral, injection, topical, etc."},
+        "indications": {"type": "TEXT", "nullable": true},
+        "contraindications": {"type": "TEXT", "nullable": true},
+        "side_effects": {"type": "JSON", "description": "Categorized by frequency"},
+        "warnings_precautions": {"type": "TEXT", "nullable": true},
+        "pregnancy_category": {"type": "VARCHAR(10)", "nullable": true},
+        "storage_conditions": {"type": "VARCHAR(200)", "nullable": true},
+        "shelf_life_months": {"type": "INTEGER", "nullable": true},
+        "fda_approved": {"type": "BOOLEAN", "default": false},
+        "manufacturer": {"type": "VARCHAR(200)", "nullable": true},
+        "created_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"},
+        "updated_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"}
+      }
+    },
+    "user_medications": {
+      "primary_key": "medication_id",
+      "columns": {
+        "medication_id": {"type": "UUID", "required": true, "unique": true},
+        "user_id": {"type": "UUID", "required": true, "foreign_key": "users.user_id"},
+        "drug_id": {"type": "UUID", "required": true, "foreign_key": "drugs_master.drug_id"},
+        "prescription_number": {"type": "VARCHAR(50)", "nullable": true},
+        "prescriber_name": {"type": "VARCHAR(200)", "nullable": true},
+        "pharmacy_name": {"type": "VARCHAR(200)", "nullable": true},
+        "strength": {"type": "VARCHAR(50)", "required": true},
+        "dosage_form": {"type": "VARCHAR(50)", "required": true},
+        "quantity_prescribed": {"type": "INTEGER", "nullable": true},
+        "refills_remaining": {"type": "INTEGER", "default": 0},
+        "dosing_frequency": {"type": "VARCHAR(100)", "nullable": true},
+        "dosing_schedule": {"type": "JSON", "description": "Specific times array"},
+        "instructions": {"type": "TEXT", "nullable": true},
+        "start_date": {"type": "DATE", "required": true},
+        "end_date": {"type": "DATE", "nullable": true},
+        "status": {"type": "ENUM", "values": ["active", "completed", "discontinued", "paused"], "default": "active"},
+        "created_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"},
+        "updated_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"}
+      }
+    },
+    "dose_events": {
+      "primary_key": "event_id",
+      "columns": {
+        "event_id": {"type": "UUID", "required": true, "unique": true},
+        "user_id": {"type": "UUID", "required": true, "foreign_key": "users.user_id"},
+        "medication_id": {"type": "UUID", "required": true, "foreign_key": "user_medications.medication_id"},
+        "scheduled_datetime": {"type": "TIMESTAMP", "required": true},
+        "actual_datetime": {"type": "TIMESTAMP", "nullable": true},
+        "status": {"type": "ENUM", "values": ["taken", "missed", "skipped", "snoozed", "partial"], "required": true},
+        "dose_amount_taken": {"type": "VARCHAR(50)", "nullable": true},
+        "taken_with_food": {"type": "BOOLEAN", "nullable": true},
+        "side_effects_noted": {"type": "TEXT", "nullable": true},
+        "notes": {"type": "TEXT", "nullable": true},
+        "recorded_via": {"type": "ENUM", "values": ["manual", "reminder", "auto", "caregiver"], "default": "manual"},
+        "created_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"}
+      }
+    }
+  }
+}

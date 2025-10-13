@@ -1,0 +1,99 @@
+{
+  "validation_rules": {
+    "data_types": {
+      "UUID": {
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+        "description": "Standard UUID format"
+      },
+      "EMAIL": {
+        "pattern": "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$",
+        "description": "Valid email address"
+      },
+      "PHONE": {
+        "pattern": "^\\+?[1-9]\\d{1,14}$",
+        "description": "International phone number format"
+      },
+      "DATE": {
+        "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+        "description": "YYYY-MM-DD format"
+      },
+      "DATETIME": {
+        "pattern": "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$",
+        "description": "YYYY-MM-DD HH:mm:ss format"
+      },
+      "TIME": {
+        "pattern": "^\\d{2}:\\d{2}:\\d{2}$",
+        "description": "HH:mm:ss format"
+      }
+    },
+    "business_rules": {
+      "user_age": {
+        "rule": "date_of_birth must be at least 13 years ago",
+        "validation": "age >= 13"
+      },
+      "medication_dates": {
+        "rule": "end_date must be after start_date",
+        "validation": "end_date > start_date"
+      },
+      "dose_schedule": {
+        "rule": "scheduled_datetime must be in the future for pending doses",
+        "validation": "scheduled_datetime >= current_time OR status != 'pending'"
+      },
+      "adherence_percentage": {
+        "rule": "adherence percentage must be between 0 and 100",
+        "validation": "adherence_percentage >= 0 AND adherence_percentage <= 100"
+      }
+    },
+    "required_fields": {
+      "users": ["user_id", "email", "password_hash"],
+      "user_profiles": ["profile_id", "user_id", "first_name", "last_name", "date_of_birth", "gender"],
+      "drugs_master": ["drug_id", "drug_name"],
+      "user_medications": ["medication_id", "user_id", "drug_id", "strength", "dosage_form", "start_date"],
+      "dose_events": ["event_id", "user_id", "medication_id", "scheduled_datetime", "status"]
+    },
+    "data_constraints": {
+      "password_hash": {
+        "min_length": 60,
+        "max_length": 255,
+        "description": "Bcrypt hash length"
+      },
+      "height_cm": {
+        "min_value": 30,
+        "max_value": 300,
+        "description": "Realistic human height range"
+      },
+      "weight_kg": {
+        "min_value": 0.5,
+        "max_value": 999.99,
+        "description": "Realistic human weight range"
+      },
+      "dosage_amount": {
+        "pattern": "^\\d+(\\.\\d+)?\\s*(mg|g|ml|tablets?|capsules?)$",
+        "description": "Standard dosage format"
+      }
+    }
+  },
+  "data_quality_checks": {
+    "completeness": {
+      "critical_fields_null_tolerance": 0,
+      "optional_fields_null_tolerance": 30,
+      "description": "Percentage of null values allowed"
+    },
+    "consistency": {
+      "foreign_key_integrity": true,
+      "enum_value_validation": true,
+      "date_range_validation": true
+    },
+    "accuracy": {
+      "email_format_validation": true,
+      "phone_format_validation": true,
+      "uuid_format_validation": true
+    }
+  },
+  "error_handling": {
+    "on_validation_failure": "log_and_skip",
+    "error_log_location": "./logs/validation_errors.log",
+    "max_errors_per_file": 100,
+    "stop_on_critical_error": true
+  }
+}
