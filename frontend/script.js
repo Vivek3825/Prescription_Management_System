@@ -50,7 +50,11 @@ function initializeEventListeners() {
     document.querySelectorAll('.modal-overlay').forEach(modal => {
         modal.addEventListener('click', function(e) {
             if (e.target === this) {
-                closeModal();
+                if (this.id === 'demoModal') {
+                    closeDemoModal();
+                } else {
+                    closeModal();
+                }
             }
         });
     });
@@ -518,7 +522,60 @@ async function showDashboard() {
         await updateUserInterface();
         await switchTab('overview');
         await initializeNotifications(); // Reinitialize notifications with user data
+        
+        // Initialize demo controls with current values
+        initializeDemoControls();
     }
+}
+
+function initializeDemoControls() {
+    // Set current values in demo controls
+    const activeMedsElement = document.querySelector('.stat-card .stat-number');
+    if (activeMedsElement) {
+        document.getElementById('activeMedsCount').value = activeMedsElement.textContent || '5';
+    }
+    
+    const streakElement = document.querySelectorAll('.stat-card .stat-number')[2];
+    if (streakElement) {
+        document.getElementById('streakDays').value = streakElement.textContent || '15';
+    }
+    
+    const dosesElement = document.querySelectorAll('.stat-card .stat-number')[1];
+    if (dosesElement && dosesElement.textContent.includes('/')) {
+        const [taken, total] = dosesElement.textContent.split('/');
+        document.getElementById('todayDosesTaken').value = taken || '8';
+        document.getElementById('todayDosesTotal').value = total || '10';
+    }
+    
+    const nextDoseElement = document.querySelectorAll('.stat-card .stat-number')[3];
+    if (nextDoseElement) {
+        // Convert 12h to 24h format for input
+        const timeText = nextDoseElement.textContent;
+        if (timeText && timeText !== 'None') {
+            try {
+                const time12h = timeText.trim();
+                const time24h = convertTo24Hour(time12h);
+                document.getElementById('nextDoseTime').value = time24h;
+            } catch (e) {
+                document.getElementById('nextDoseTime').value = '14:30';
+            }
+        }
+    }
+}
+
+function convertTo24Hour(time12h) {
+    const [time, modifier] = time12h.split(' ');
+    let [hours, minutes] = time.split(':');
+    
+    if (hours === '12') {
+        hours = '00';
+    }
+    
+    if (modifier === 'PM') {
+        hours = parseInt(hours, 10) + 12;
+    }
+    
+    return `${hours.toString().padStart(2, '0')}:${minutes}`;
 }
 
 async function updateUserInterface() {
@@ -625,12 +682,18 @@ async function switchTab(tabName) {
     // Special handling for different tabs
     if (tabName === 'calendar') {
         generateCalendar();
+        hideDemoControls();
     } else if (tabName === 'medications') {
         await refreshMedicationsDisplay();
+        hideDemoControls();
     } else if (tabName === 'overview') {
         await updateOverviewStats();
+        showDemoControls();
     } else if (tabName === 'lifestyle') {
         await updateLifestyleData();
+        hideDemoControls();
+    } else {
+        hideDemoControls();
     }
 }
 
@@ -2128,6 +2191,325 @@ document.head.insertAdjacentHTML('beforeend', `
     align-items: center;
     gap: 1rem;
 }
+
+/* Demo Controls Floating Button */
+.demo-floating-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 70px;
+    height: 70px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    z-index: 1000;
+    font-family: inherit;
+}
+
+.demo-floating-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+}
+
+.demo-floating-btn:active {
+    transform: translateY(-1px);
+}
+
+.demo-floating-btn i {
+    font-size: 1.2rem;
+}
+
+.demo-floating-btn span {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Demo Modal Styles */
+.demo-modal-container {
+    max-width: 700px;
+    width: 90vw;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.demo-modal-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.demo-control-section {
+    margin-bottom: 2rem;
+}
+
+.demo-control-section h3 {
+    margin: 0 0 1rem 0;
+    color: #374151;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.demo-control-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.demo-control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.demo-control-group label {
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.9rem;
+}
+
+.demo-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #f8fafc;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.demo-input-group input {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: white;
+}
+
+.demo-input-group input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.demo-doses-group {
+    display: flex;
+    align-items: center;
+}
+
+.dose-separator {
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 1.1rem;
+}
+
+.demo-update-btn {
+    padding: 0.5rem 1rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.demo-update-btn:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+}
+
+.demo-scenarios-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+}
+
+.scenario-btn {
+    padding: 1rem;
+    border: 2px solid;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+}
+
+.scenario-btn i {
+    font-size: 1.5rem;
+}
+
+.scenario-btn span {
+    font-weight: 600;
+}
+
+.scenario-btn small {
+    opacity: 0.8;
+    font-size: 0.75rem;
+}
+
+.scenario-btn.excellent {
+    background: #d1fae5;
+    color: #059669;
+    border-color: #a7f3d0;
+}
+
+.scenario-btn.excellent:hover {
+    background: #a7f3d0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.2);
+}
+
+.scenario-btn.good {
+    background: #dbeafe;
+    color: #2563eb;
+    border-color: #93c5fd;
+}
+
+.scenario-btn.good:hover {
+    background: #93c5fd;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+
+.scenario-btn.poor {
+    background: #fee2e2;
+    color: #dc2626;
+    border-color: #fca5a5;
+}
+
+.scenario-btn.poor:hover {
+    background: #fca5a5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+}
+
+.scenario-btn.new {
+    background: #f3f4f6;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.scenario-btn.new:hover {
+    background: #e5e7eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(55, 65, 81, 0.1);
+}
+
+.demo-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.demo-action-btn {
+    flex: 1;
+    min-width: 200px;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+}
+
+.demo-action-btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.demo-action-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.demo-action-btn.secondary {
+    background: #f8fafc;
+    color: #374151;
+    border: 2px solid #e2e8f0;
+}
+
+.demo-action-btn.secondary:hover {
+    background: #e2e8f0;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile Responsiveness for Demo Controls */
+@media (max-width: 768px) {
+    .demo-floating-btn {
+        width: 60px;
+        height: 60px;
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .demo-floating-btn i {
+        font-size: 1rem;
+    }
+    
+    .demo-floating-btn span {
+        font-size: 0.6rem;
+    }
+    
+    .demo-modal-container {
+        width: 95vw;
+        max-height: 90vh;
+    }
+    
+    .demo-control-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .demo-scenarios-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .demo-actions {
+        flex-direction: column;
+    }
+    
+    .demo-action-btn {
+        min-width: auto;
+    }
+    
+    .scenario-btn {
+        padding: 0.75rem;
+    }
+    
+    .scenario-btn i {
+        font-size: 1.2rem;
+    }
+}
 </style>
 `);
 
@@ -2140,3 +2522,427 @@ setInterval(() => {
 }, 30000); // Save every 30 seconds
 
 console.log('PrescripCare application initialized successfully!');
+
+// Demo Controls Functionality
+function openDemoModal() {
+    const modal = document.getElementById('demoModal');
+    if (modal) {
+        modal.classList.add('active');
+        // Initialize values when opening
+        initializeDemoControls();
+    }
+}
+
+function closeDemoModal() {
+    const modal = document.getElementById('demoModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+// Add keyboard support for demo modal
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const demoModal = document.getElementById('demoModal');
+        if (demoModal && demoModal.classList.contains('active')) {
+            closeDemoModal();
+        }
+    }
+});
+
+function updateActiveMeds() {
+    const count = document.getElementById('activeMedsCount').value;
+    const statCard = document.querySelector('.stat-card .stat-number');
+    if (statCard) {
+        statCard.textContent = count;
+        showNotification(`Active medications updated to ${count}`, 'success');
+    }
+}
+
+function updateStreakDays() {
+    const days = document.getElementById('streakDays').value;
+    const streakCards = document.querySelectorAll('.stat-card .stat-number');
+    if (streakCards[2]) {
+        streakCards[2].textContent = days;
+        
+        // Update calendar counter too
+        const calendarStreak = document.querySelector('.counter-card .counter-number');
+        if (calendarStreak) {
+            calendarStreak.textContent = days;
+        }
+        
+        showNotification(`Streak days updated to ${days}`, 'success');
+    }
+}
+
+function updateTodayDoses() {
+    const taken = document.getElementById('todayDosesTaken').value;
+    const total = document.getElementById('todayDosesTotal').value;
+    const doseCards = document.querySelectorAll('.stat-card .stat-number');
+    
+    if (doseCards[1]) {
+        doseCards[1].textContent = `${taken}/${total}`;
+        
+        // Update schedule to reflect the changes
+        updateScheduleDisplay(parseInt(taken), parseInt(total));
+        
+        showNotification(`Today's doses updated to ${taken}/${total}`, 'success');
+    }
+}
+
+function updateNextDose() {
+    const time = document.getElementById('nextDoseTime').value;
+    const nextDoseCards = document.querySelectorAll('.stat-card .stat-number');
+    
+    if (nextDoseCards[3]) {
+        // Convert 24h to 12h format
+        const timeObj = new Date(`2000-01-01T${time}`);
+        const displayTime = timeObj.toLocaleTimeString('en-US', { 
+            hour: 'numeric', 
+            minute: '2-digit',
+            hour12: true 
+        });
+        
+        nextDoseCards[3].textContent = displayTime;
+        
+        // Update notification
+        updateNotificationDisplay(displayTime);
+        
+        showNotification(`Next dose time updated to ${displayTime}`, 'success');
+    }
+}
+
+function updateScheduleDisplay(taken, total) {
+    const scheduleContainer = document.querySelector('.medication-schedule');
+    if (!scheduleContainer) return;
+    
+    const scheduleItems = scheduleContainer.querySelectorAll('.schedule-item');
+    
+    // Reset all items to upcoming first
+    scheduleItems.forEach(item => {
+        item.className = 'schedule-item upcoming';
+        item.querySelector('.schedule-status').innerHTML = '<i class="fas fa-clock"></i>';
+    });
+    
+    // Mark the first 'taken' items as taken
+    for (let i = 0; i < Math.min(taken, scheduleItems.length); i++) {
+        scheduleItems[i].className = 'schedule-item taken';
+        scheduleItems[i].querySelector('.schedule-status').innerHTML = '<i class="fas fa-check-circle"></i>';
+    }
+    
+    // Mark remaining items as missed if past time or upcoming
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    
+    for (let i = taken; i < scheduleItems.length; i++) {
+        const timeText = scheduleItems[i].querySelector('.schedule-time').textContent;
+        const [hours, minutes] = timeText.split(':');
+        const scheduleHour = parseInt(hours);
+        const scheduleMinute = parseInt(minutes);
+        
+        if (scheduleHour < currentHour || (scheduleHour === currentHour && scheduleMinute < currentMinute)) {
+            scheduleItems[i].className = 'schedule-item missed';
+            scheduleItems[i].querySelector('.schedule-status').innerHTML = '<i class="fas fa-times-circle"></i>';
+        }
+    }
+}
+
+function updateNotificationDisplay(nextDoseTime) {
+    const notificationsList = document.querySelector('.notifications-list');
+    if (!notificationsList) return;
+    
+    // Update the first notification (dose reminder)
+    const firstNotification = notificationsList.querySelector('.notification-item');
+    if (firstNotification) {
+        const content = firstNotification.querySelector('.notification-content p');
+        const timeSpan = firstNotification.querySelector('.notification-content span');
+        
+        if (content && timeSpan) {
+            content.textContent = 'Time to take your next medication';
+            
+            // Calculate time difference
+            const now = new Date();
+            const nextDose = new Date(`${now.toDateString()} ${document.getElementById('nextDoseTime').value}`);
+            const diffMinutes = Math.round((nextDose - now) / (1000 * 60));
+            
+            if (diffMinutes > 0) {
+                timeSpan.textContent = `In ${diffMinutes} minutes`;
+            } else if (diffMinutes === 0) {
+                timeSpan.textContent = 'Now';
+            } else {
+                timeSpan.textContent = `${Math.abs(diffMinutes)} minutes ago`;
+            }
+        }
+    }
+}
+
+function applyScenario(scenario) {
+    switch (scenario) {
+        case 'excellent':
+            document.getElementById('activeMedsCount').value = 6;
+            document.getElementById('streakDays').value = 45;
+            document.getElementById('todayDosesTaken').value = 12;
+            document.getElementById('todayDosesTotal').value = 12;
+            document.getElementById('nextDoseTime').value = '20:00';
+            break;
+            
+        case 'good':
+            document.getElementById('activeMedsCount').value = 4;
+            document.getElementById('streakDays').value = 12;
+            document.getElementById('todayDosesTaken').value = 7;
+            document.getElementById('todayDosesTotal').value = 8;
+            document.getElementById('nextDoseTime').value = '18:30';
+            break;
+            
+        case 'poor':
+            document.getElementById('activeMedsCount').value = 3;
+            document.getElementById('streakDays').value = 2;
+            document.getElementById('todayDosesTaken').value = 2;
+            document.getElementById('todayDosesTotal').value = 6;
+            document.getElementById('nextDoseTime').value = '16:00';
+            break;
+            
+        case 'newpatient':
+            document.getElementById('activeMedsCount').value = 1;
+            document.getElementById('streakDays').value = 0;
+            document.getElementById('todayDosesTaken').value = 0;
+            document.getElementById('todayDosesTotal').value = 2;
+            document.getElementById('nextDoseTime').value = '09:00';
+            break;
+    }
+    
+    // Apply all updates
+    updateActiveMeds();
+    updateStreakDays();
+    updateTodayDoses();
+    updateNextDose();
+    
+    const scenarioNames = {
+        excellent: 'Excellent Adherence',
+        good: 'Good Adherence', 
+        poor: 'Poor Adherence',
+        newpatient: 'New Patient'
+    };
+    
+    showNotification(`Applied ${scenarioNames[scenario]} scenario`, 'success');
+}
+
+function generateNewSchedule() {
+    const medications = [
+        'Metformin 500mg',
+        'Lisinopril 10mg', 
+        'Vitamin D3 2000 IU',
+        'Atorvastatin 20mg',
+        'Aspirin 81mg',
+        'Omeprazole 20mg'
+    ];
+    
+    const times = ['06:00', '08:00', '12:00', '14:30', '18:00', '20:00', '22:00'];
+    
+    const scheduleContainer = document.querySelector('.medication-schedule');
+    if (!scheduleContainer) return;
+    
+    scheduleContainer.innerHTML = '';
+    
+    // Generate 4-6 random schedule items
+    const itemCount = 4 + Math.floor(Math.random() * 3);
+    const usedTimes = new Set();
+    
+    for (let i = 0; i < itemCount; i++) {
+        let time, medication;
+        
+        // Ensure unique times
+        do {
+            time = times[Math.floor(Math.random() * times.length)];
+        } while (usedTimes.has(time));
+        usedTimes.add(time);
+        
+        medication = medications[Math.floor(Math.random() * medications.length)];
+        
+        // Determine status based on time and randomness
+        const now = new Date();
+        const [hours, minutes] = time.split(':');
+        const scheduleTime = new Date();
+        scheduleTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        
+        let status = 'upcoming';
+        let icon = '<i class="fas fa-clock"></i>';
+        
+        if (scheduleTime < now) {
+            const rand = Math.random();
+            if (rand > 0.2) {
+                status = 'taken';
+                icon = '<i class="fas fa-check-circle"></i>';
+            } else {
+                status = 'missed';
+                icon = '<i class="fas fa-times-circle"></i>';
+            }
+        }
+        
+        const scheduleItem = document.createElement('div');
+        scheduleItem.className = `schedule-item ${status}`;
+        scheduleItem.innerHTML = `
+            <div class="schedule-time">${time}</div>
+            <div class="schedule-med">${medication}</div>
+            <div class="schedule-status">${icon}</div>
+        `;
+        
+        scheduleContainer.appendChild(scheduleItem);
+    }
+    
+    // Sort schedule items by time
+    const items = Array.from(scheduleContainer.children);
+    items.sort((a, b) => {
+        const timeA = a.querySelector('.schedule-time').textContent;
+        const timeB = b.querySelector('.schedule-time').textContent;
+        return timeA.localeCompare(timeB);
+    });
+    
+    scheduleContainer.innerHTML = '';
+    items.forEach(item => scheduleContainer.appendChild(item));
+    
+    // Update dose counts based on new schedule
+    const taken = scheduleContainer.querySelectorAll('.schedule-item.taken').length;
+    const total = items.length;
+    
+    document.getElementById('todayDosesTaken').value = taken;
+    document.getElementById('todayDosesTotal').value = total;
+    updateTodayDoses();
+    
+    // Generate corresponding notifications
+    generateRealisticNotifications(items);
+    
+    showNotification('Generated new medication schedule', 'success');
+}
+
+function generateRealisticNotifications(scheduleItems) {
+    const notificationsContainer = document.querySelector('.notifications-list');
+    if (!notificationsContainer) return;
+    
+    notificationsContainer.innerHTML = '';
+    
+    const now = new Date();
+    const notifications = [];
+    
+    // Check for upcoming doses
+    scheduleItems.forEach(item => {
+        const timeText = item.querySelector('.schedule-time').textContent;
+        const medication = item.querySelector('.schedule-med').textContent;
+        const [hours, minutes] = timeText.split(':');
+        
+        const scheduleTime = new Date();
+        scheduleTime.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        
+        const timeDiff = scheduleTime - now;
+        const minutesDiff = Math.round(timeDiff / (1000 * 60));
+        
+        if (minutesDiff > 0 && minutesDiff <= 60) {
+            notifications.push({
+                icon: 'fas fa-bell text-primary',
+                text: `Time to take your ${medication}`,
+                time: `In ${minutesDiff} minutes`,
+                priority: 1
+            });
+        }
+    });
+    
+    // Add adherence-based notifications
+    const takenCount = scheduleItems.filter(item => item.classList.contains('taken')).length;
+    const totalCount = scheduleItems.length;
+    const adherenceRate = totalCount > 0 ? (takenCount / totalCount) * 100 : 0;
+    
+    if (adherenceRate === 100) {
+        notifications.push({
+            icon: 'fas fa-check-circle text-success',
+            text: 'Perfect adherence today!',
+            time: 'Just now',
+            priority: 2
+        });
+    } else if (adherenceRate >= 80) {
+        notifications.push({
+            icon: 'fas fa-thumbs-up text-success',
+            text: 'Great job on medication adherence',
+            time: '1 hour ago',
+            priority: 2
+        });
+    } else if (adherenceRate < 50) {
+        notifications.push({
+            icon: 'fas fa-exclamation-triangle text-warning',
+            text: 'Multiple doses missed today',
+            time: '30 minutes ago',
+            priority: 1
+        });
+    }
+    
+    // Add some general notifications
+    const generalNotifications = [
+        {
+            icon: 'fas fa-info-circle text-info',
+            text: 'Weekly medication review scheduled',
+            time: '2 hours ago',
+            priority: 3
+        },
+        {
+            icon: 'fas fa-prescription-bottle text-warning',
+            text: 'Refill needed for 2 medications',
+            time: '1 day ago',
+            priority: 2
+        }
+    ];
+    
+    // Add a few general notifications
+    notifications.push(...generalNotifications.slice(0, 2));
+    
+    // Sort by priority and display
+    notifications.sort((a, b) => a.priority - b.priority);
+    
+    notifications.slice(0, 4).forEach(notification => {
+        const notificationItem = document.createElement('div');
+        notificationItem.className = 'notification-item';
+        notificationItem.innerHTML = `
+            <i class="${notification.icon}"></i>
+            <div class="notification-content">
+                <p>${notification.text}</p>
+                <span>${notification.time}</span>
+            </div>
+        `;
+        notificationsContainer.appendChild(notificationItem);
+    });
+}
+
+// Show demo controls when on overview tab
+function showDemoControls() {
+    const demoFloatingBtn = document.getElementById('demoFloatingBtn');
+    if (demoFloatingBtn && currentUser) {
+        demoFloatingBtn.style.display = 'flex';
+    }
+}
+
+// Hide demo controls when not on overview tab
+function hideDemoControls() {
+    const demoFloatingBtn = document.getElementById('demoFloatingBtn');
+    if (demoFloatingBtn) {
+        demoFloatingBtn.style.display = 'none';
+    }
+    
+    // Also close the modal if it's open
+    closeDemoModal();
+}
+
+// Reset to default values
+function resetToDefaults() {
+    document.getElementById('activeMedsCount').value = '5';
+    document.getElementById('streakDays').value = '15';
+    document.getElementById('todayDosesTaken').value = '8';
+    document.getElementById('todayDosesTotal').value = '10';
+    document.getElementById('nextDoseTime').value = '14:30';
+    
+    // Apply all updates
+    updateActiveMeds();
+    updateStreakDays();
+    updateTodayDoses();
+    updateNextDose();
+    
+    showNotification('Reset to default values', 'info');
+}

@@ -352,6 +352,12 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Demo Controls Floating Button -->
+                    <button class="demo-floating-btn" id="demoFloatingBtn" onclick="openDemoModal()" style="display: none;" title="Demo Controls">
+                        <i class="fas fa-cogs"></i>
+                        <span>Demo</span>
+                    </button>
                 </div>
 
                 <!-- Medications Tab -->
@@ -708,6 +714,97 @@
                     </div>
                 </div>
             </main>
+        </div>
+    </div>
+
+    <!-- Demo Controls Modal -->
+    <div class="modal-overlay" id="demoModal">
+        <div class="modal-container demo-modal-container">
+            <button class="modal-close" onclick="closeDemoModal()">&times;</button>
+            <div class="modal-header">
+                <h2><i class="fas fa-cogs"></i> Demo Controls</h2>
+                <p>Adjust values for practical demonstration</p>
+            </div>
+            <div class="demo-modal-content">
+                <div class="demo-control-section">
+                    <h3>Health Statistics</h3>
+                    <div class="demo-control-grid">
+                        <div class="demo-control-group">
+                            <label for="activeMedsCount">Active Medications:</label>
+                            <div class="demo-input-group">
+                                <input type="number" id="activeMedsCount" min="0" max="20" value="5">
+                                <button onclick="updateActiveMeds()" class="demo-update-btn">Update</button>
+                            </div>
+                        </div>
+
+                        <div class="demo-control-group">
+                            <label for="streakDays">Streak Days:</label>
+                            <div class="demo-input-group">
+                                <input type="number" id="streakDays" min="0" max="365" value="15">
+                                <button onclick="updateStreakDays()" class="demo-update-btn">Update</button>
+                            </div>
+                        </div>
+
+                        <div class="demo-control-group">
+                            <label for="todayDosesTaken">Today's Doses:</label>
+                            <div class="demo-input-group demo-doses-group">
+                                <input type="number" id="todayDosesTaken" min="0" max="20" value="8" placeholder="Taken">
+                                <span class="dose-separator">/</span>
+                                <input type="number" id="todayDosesTotal" min="1" max="20" value="10" placeholder="Total">
+                                <button onclick="updateTodayDoses()" class="demo-update-btn">Update</button>
+                            </div>
+                        </div>
+
+                        <div class="demo-control-group">
+                            <label for="nextDoseTime">Next Dose Time:</label>
+                            <div class="demo-input-group">
+                                <input type="time" id="nextDoseTime" value="14:30">
+                                <button onclick="updateNextDose()" class="demo-update-btn">Update</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-control-section">
+                    <h3>Quick Scenarios</h3>
+                    <div class="demo-scenarios-grid">
+                        <button onclick="applyScenario('excellent')" class="scenario-btn excellent">
+                            <i class="fas fa-star"></i>
+                            <span>Excellent Adherence</span>
+                            <small>Perfect compliance</small>
+                        </button>
+                        <button onclick="applyScenario('good')" class="scenario-btn good">
+                            <i class="fas fa-thumbs-up"></i>
+                            <span>Good Adherence</span>
+                            <small>Minor misses</small>
+                        </button>
+                        <button onclick="applyScenario('poor')" class="scenario-btn poor">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>Poor Adherence</span>
+                            <small>Multiple misses</small>
+                        </button>
+                        <button onclick="applyScenario('newpatient')" class="scenario-btn new">
+                            <i class="fas fa-user-plus"></i>
+                            <span>New Patient</span>
+                            <small>Just started</small>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="demo-control-section">
+                    <h3>Actions</h3>
+                    <div class="demo-actions">
+                        <button onclick="generateNewSchedule()" class="demo-action-btn primary">
+                            <i class="fas fa-refresh"></i>
+                            Generate New Schedule
+                        </button>
+                        <button onclick="resetToDefaults()" class="demo-action-btn secondary">
+                            <i class="fas fa-undo"></i>
+                            Reset to Defaults
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
