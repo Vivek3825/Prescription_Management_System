@@ -235,19 +235,15 @@ config/production.json
 # =============================================================================
 # Project Specific
 # =============================================================================
-# CSV Data Files (keep structure, not actual data)
-database/core_tables/*.csv
-database/master_data/*.csv
-database/user_data/*.csv
-database/analytics/*.csv
-!database/core_tables/.gitkeep
-!database/master_data/.gitkeep
-!database/user_data/.gitkeep
-!database/analytics/.gitkeep
+# CSV Data Files - Keep the structure files, ignore actual user data
+# Only ignore backup and temporary CSV files
+database/**/*.backup.csv
+database/**/*.temp.csv
+database/**/*.bak.csv
 
-# Keep sample/demo CSV files
-!database/core_tables/users.csv
-!database/master_data/drugs_master.csv
+# Keep all core table structure and master data files
+!database/core_tables/*.csv
+!database/master_data/*.csv
 
 # Backup files
 *.backup

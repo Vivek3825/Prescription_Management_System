@@ -1,0 +1,8 @@
+user_id,name,age,gender,weight,height,contact_no,email_id,bmi,created_at,updated_at
+demo,demo,22,male,55,170,1472583690,demo@example.com,19,2025-10-27 13:44:26,2025-10-27 13:44:26
+demo1,demo1,23,male,45,167,159264873,demo1@example.com,16.1,2025-10-27 14:06:18,2025-10-27 14:06:18
+demo3,demo3,33,male,55,180,14725632,demo3@example.com,17,2025-10-27 14:48:10,2025-10-27 14:48:10
+demo11,d,1,male,55,123,111111,demo11@example.com,36.4,2025-10-27 14:57:21,2025-10-27 14:57:21
+Guest,dd,22,female,22,78,22222,Guest@gmail.com,36.2,2025-10-27 15:00:33,2025-10-27 15:00:33
+demo123,demo123,21,male,65,182,1111111111,demo123@example.com,19.6,2025-10-27 16:10:04,2025-10-27 16:10:04
+Saurabh123,Saurabh,21,male,54,172,1111222334,Saurabh123@gmail.com,18.3,2025-10-27 16:27:46,2025-10-27 16:27:46

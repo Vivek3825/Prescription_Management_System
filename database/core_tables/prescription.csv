@@ -1,0 +1,7 @@
+user_id,medicine_name,frequency,start_date,end_date,dose,doctor_name,created_at,updated_at
+demo,Paracetamol,Three times daily,2025-10-26,2025-10-30,1 mg,Dr demo,2025-10-27 13:44:26,2025-10-27 13:44:26
+demo11,p,Twice daily,2025-10-29,2025-10-26,1,dr,2025-10-27 14:57:21,2025-10-27 14:57:21
+demo123,para,Once daily,2025-10-27,2025-10-30,1 tab,Dr demo123,2025-10-27 16:10:04,2025-10-27 16:10:04
+demo123,para1,Twice daily,2025-10-27,2025-10-31,500mg,Dr demo 123,2025-10-27 16:10:04,2025-10-27 16:10:04
+Saurabh123,Para,Twice daily,2025-11-01,2025-11-08,500 mg,Dr Mali,2025-10-27 16:27:46,2025-10-27 16:27:46
+Saurabh123,Omi,Once daily,2025-11-01,2025-11-08,1 tab,Dr Mali,2025-10-27 16:27:46,2025-10-27 16:27:46
