@@ -1,49 +1,73 @@
 {
   "table_schemas": {
-    "users": {
+    "authentication": {
       "primary_key": "user_id",
       "columns": {
-        "user_id": {"type": "UUID", "required": true, "unique": true},
+        "user_id": {"type": "VARCHAR(100)", "required": true, "unique": true, "description": "Email username before @ sign"},
         "email": {"type": "VARCHAR(255)", "required": true, "unique": true},
-        "password_hash": {"type": "VARCHAR(255)", "required": true},
-        "email_verified": {"type": "BOOLEAN", "default": false},
-        "account_status": {"type": "ENUM", "values": ["active", "suspended", "deactivated"], "default": "active"},
-        "two_factor_enabled": {"type": "BOOLEAN", "default": false},
-        "created_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"},
-        "updated_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"},
-        "last_login": {"type": "TIMESTAMP", "nullable": true},
-        "login_attempts": {"type": "INTEGER", "default": 0},
-        "locked_until": {"type": "TIMESTAMP", "nullable": true}
+        "password": {"type": "VARCHAR(255)", "required": true}
       },
       "relationships": {
-        "user_profiles": {"type": "one_to_one", "foreign_key": "user_id"},
-        "user_medications": {"type": "one_to_many", "foreign_key": "user_id"}
+        "info": {"type": "one_to_one", "foreign_key": "user_id"},
+        "prescription": {"type": "one_to_many", "foreign_key": "user_id"}
       }
     },
-    "user_profiles": {
-      "primary_key": "profile_id",
+    "info": {
+      "primary_key": "user_id",
       "columns": {
-        "profile_id": {"type": "UUID", "required": true, "unique": true},
-        "user_id": {"type": "UUID", "required": true, "foreign_key": "users.user_id"},
-        "first_name": {"type": "VARCHAR(100)", "required": true},
-        "last_name": {"type": "VARCHAR(100)", "required": true},
-        "date_of_birth": {"type": "DATE", "required": true},
-        "gender": {"type": "ENUM", "values": ["male", "female", "other", "prefer_not_to_say"], "required": true},
-        "phone_number": {"type": "VARCHAR(20)", "nullable": true},
-        "emergency_contact_name": {"type": "VARCHAR(200)", "nullable": true},
-        "emergency_contact_phone": {"type": "VARCHAR(20)", "nullable": true},
-        "height_cm": {"type": "INTEGER", "min": 1, "max": 300},
-        "weight_kg": {"type": "DECIMAL(5,2)", "min": 0.1, "max": 999.99},
-        "blood_type": {"type": "ENUM", "values": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "unknown"]},
-        "address_line1": {"type": "VARCHAR(255)", "nullable": true},
-        "city": {"type": "VARCHAR(100)", "nullable": true},
-        "state_province": {"type": "VARCHAR(100)", "nullable": true},
-        "postal_code": {"type": "VARCHAR(20)", "nullable": true},
-        "country": {"type": "VARCHAR(100)", "nullable": true},
-        "timezone": {"type": "VARCHAR(50)", "default": "UTC"},
-        "preferred_language": {"type": "VARCHAR(10)", "default": "en"},
-        "created_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"},
-        "updated_at": {"type": "TIMESTAMP", "default": "CURRENT_TIMESTAMP"}
+        "user_id": {"type": "VARCHAR(100)", "required": true, "unique": true, "foreign_key": "authentication.user_id", "description": "Email username before @ sign"},
+        "name": {"type": "VARCHAR(200)", "required": true},
+        "age": {"type": "INTEGER", "min": 1, "max": 120, "required": true},
+        "gender": {"type": "ENUM", "values": ["male", "female", "other"], "required": true},
+        "weight": {"type": "DECIMAL(5,2)", "min": 0.1, "max": 999.99, "required": true, "description": "Weight in kg"},
+        "height": {"type": "INTEGER", "min": 50, "max": 300, "required": true, "description": "Height in cm"},
+        "contact_no": {"type": "VARCHAR(20)", "required": true},
+        "email_id": {"type": "VARCHAR(255)", "required": true},
+        "bmi": {"type": "DECIMAL(4,1)", "description": "Calculated BMI = weight(kg) / (height(m))^2"}
+      }
+    },
+    "prescription": {
+      "primary_key": "user_id",
+      "columns": {
+        "user_id": {"type": "VARCHAR(100)", "required": true, "foreign_key": "authentication.user_id", "description": "Email username before @ sign"},
+        "medicine_name": {"type": "VARCHAR(200)", "required": true},
+        "frequency": {"type": "VARCHAR(100)", "required": true, "description": "e.g., Once daily, Twice daily, etc."},
+        "start_date": {"type": "DATE", "required": true},
+        "end_date": {"type": "DATE", "nullable": true},
+        "dose": {"type": "VARCHAR(50)", "required": true, "description": "e.g., 500mg, 1 tablet, etc."},
+        "doctor_name": {"type": "VARCHAR(200)", "required": true}
+      }
+    },
+    "progress": {
+      "primary_key": "user_id",
+      "columns": {
+        "user_id": {"type": "VARCHAR(100)", "required": true, "foreign_key": "authentication.user_id", "description": "Email username before @ sign"},
+        "pending_dose": {"type": "INTEGER", "default": 0},
+        "continue_dose": {"type": "INTEGER", "default": 0},
+        "upcoming_dose": {"type": "INTEGER", "default": 0},
+        "completed_dose": {"type": "INTEGER", "default": 0}
+      }
+    },
+    "drugs": {
+      "primary_key": "drug_id",
+      "columns": {
+        "drug_id": {"type": "UUID", "required": true, "unique": true},
+        "drug_name": {"type": "VARCHAR(200)", "required": true},
+        "usage": {"type": "TEXT", "nullable": true},
+        "harmful_interaction": {"type": "TEXT", "nullable": true},
+        "allergies": {"type": "TEXT", "nullable": true},
+        "contraindication": {"type": "TEXT", "nullable": true},
+        "side_effects": {"type": "TEXT", "nullable": true}
+      }
+    },
+    "lifestyle": {
+      "primary_key": "user_id",
+      "columns": {
+        "user_id": {"type": "VARCHAR(100)", "required": true, "foreign_key": "authentication.user_id", "description": "Email username before @ sign"},
+        "lifestyle_changes": {"type": "TEXT", "nullable": true},
+        "diet_plan": {"type": "TEXT", "nullable": true},
+        "recommendations": {"type": "TEXT", "nullable": true},
+        "notes": {"type": "TEXT", "nullable": true}
       }
     },
     "drugs_master": {

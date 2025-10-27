@@ -262,6 +262,22 @@ body {
     transform: translateY(-2px);
 }
 
+/* Override secondary button style inside light surfaces (signup modal, white cards) */
+.signup-modal .btn-secondary,
+.modal-container .btn-secondary,
+.form-step .btn-secondary {
+    background: #f8fafc; /* light surface */
+    color: #0f172a;      /* text primary */
+    border: 1px solid #e2e8f0; /* border color */
+}
+
+.signup-modal .btn-secondary:hover,
+.modal-container .btn-secondary:hover,
+.form-step .btn-secondary:hover {
+    background: #eef2f7;
+    box-shadow: var(--shadow-sm);
+}
+
 .full-width {
     width: 100%;
     justify-content: center;
@@ -632,6 +648,16 @@ body {
 
 .form-footer a:hover {
     text-decoration: underline;
+}
+
+.form-hint {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: rgba(99, 102, 241, 0.05);
+    border-left: 3px solid var(--primary-color);
+    border-radius: 4px;
 }
 
 /* Dashboard Styles */
@@ -1598,4 +1624,79 @@ body {
         align-items: flex-start;
         gap: 1rem;
     }
+}
+
+/* Prescription List Styles */
+.prescription-item {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.prescription-item:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.prescription-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 10px;
+}
+
+.prescription-item-title {
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.prescription-item-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.prescription-item-detail {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.prescription-item-detail i {
+    color: #94a3b8;
+    width: 14px;
+}
+
+.prescription-remove-btn {
+    background: #fee2e2;
+    color: #dc2626;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.prescription-remove-btn:hover {
+    background: #fecaca;
+    transform: translateY(-1px);
+}
+
+.prescription-empty-state {
+    text-align: center;
+    padding: 30px;
+    color: #94a3b8;
+    font-size: 14px;
 }

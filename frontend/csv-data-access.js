@@ -1,21 +1,35 @@
 // CSV Data Access Layer for Frontend
-// Provides CRUD operations for CSV database files without backend
+// Provides CRUD operations using Backend API
 
 class CSVDataAccess {
-    constructor(databasePath = '../database') {
+    constructor(databasePath = '../database', backendURL = 'http://localhost:5000') {
         this.databasePath = databasePath;
+        this.backendURL = backendURL;
         this.cache = new Map();
         this.schemas = null;
+        this.useBackend = true; // Set to true to use backend API
     }
 
-    // Load CSV file and parse it (with fallback to hardcoded data)
+    // Load CSV file data from backend API or localStorage fallback
     async loadCSV(tableName) {
         if (this.cache.has(tableName)) {
             return this.cache.get(tableName);
         }
 
         try {
-            // Try localStorage first (simulated database)
+            if (this.useBackend) {
+                // Try backend API first
+                const response = await fetch(`${this.backendURL}/api/tables/${tableName}`);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                        this.cache.set(tableName, result.data);
+                        return result.data;
+                    }
+                }
+            }
+
+            // Fallback to localStorage (for backward compatibility)
             const localData = localStorage.getItem(`csv_${tableName}`);
             if (localData) {
                 const data = JSON.parse(localData);
@@ -23,7 +37,7 @@ class CSVDataAccess {
                 return data;
             }
 
-            // Try to fetch CSV file
+            // Try to fetch CSV file directly
             const filePath = this.getTablePath(tableName);
             const response = await fetch(filePath);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -146,27 +160,31 @@ class CSVDataAccess {
     // Get table file path
     getTablePath(tableName) {
         const tablePaths = {
-            // Core tables
-            'users': 'core_tables/users.csv',
-            'user_profiles': 'core_tables/user_profiles.csv',
-            'user_medical_conditions': 'core_tables/user_medical_conditions.csv',
-            'user_allergies': 'core_tables/user_allergies.csv',
-            'healthcare_providers': 'core_tables/healthcare_providers.csv',
+            // Core tables - NEW STRUCTURE
+            'authentication': 'core_tables/authentication.csv',
+            'info': 'core_tables/info.csv',
+            'prescription': 'core_tables/prescription.csv',
+            'progress': 'core_tables/progress.csv',
+            'lifestyle': 'core_tables/lifestyle.csv',
             
             // Master data
+            'drugs': 'master_data/drugs.csv',
             'drugs_master': 'master_data/drugs_master.csv',
             'drug_interactions': 'master_data/drug_interactions.csv',
             'drug_food_interactions': 'master_data/drug_food_interactions.csv',
             'pharmacies': 'master_data/pharmacies.csv',
             
-            // User data
+            // Legacy tables (for backward compatibility)
+            'users': 'core_tables/users.csv',
+            'user_profiles': 'core_tables/user_profiles.csv',
+            'user_medical_conditions': 'core_tables/user_medical_conditions.csv',
+            'user_allergies': 'core_tables/user_allergies.csv',
+            'healthcare_providers': 'core_tables/healthcare_providers.csv',
             'user_medications': 'user_data/user_medications.csv',
             'medication_schedules': 'user_data/medication_schedules.csv',
             'dose_events': 'user_data/dose_events.csv',
             'notification_preferences': 'user_data/notification_preferences.csv',
             'user_insurance': 'user_data/user_insurance.csv',
-            
-            // Analytics
             'adherence_summaries': 'analytics/adherence_summaries.csv',
             'health_metrics': 'analytics/health_metrics.csv',
             'lifestyle_goals': 'analytics/lifestyle_goals.csv',
@@ -193,6 +211,12 @@ class CSVDataAccess {
         // Fallback schema definitions
         this.schemas = {
             table_schemas: {
+                authentication: { primary_key: 'user_id' },
+                info: { primary_key: 'user_id' },
+                prescription: { primary_key: 'user_id' },
+                progress: { primary_key: 'user_id' },
+                drugs: { primary_key: 'drug_id' },
+                lifestyle: { primary_key: 'user_id' },
                 users: { primary_key: 'user_id' },
                 user_profiles: { primary_key: 'profile_id' },
                 user_medications: { primary_key: 'medication_id' },
@@ -232,16 +256,44 @@ class CSVDataAccess {
 
     // Find records by criteria
     async findBy(tableName, criteria) {
-        const data = await this.loadCSV(tableName);
-        
-        return data.filter(record => {
-            return Object.keys(criteria).every(key => {
-                if (typeof criteria[key] === 'string') {
-                    return String(record[key]).toLowerCase().includes(criteria[key].toLowerCase());
+        try {
+            if (this.useBackend) {
+                // Use backend API
+                const response = await fetch(`${this.backendURL}/api/tables/${tableName}/find`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(criteria)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        return result.data;
+                    }
                 }
-                return record[key] === criteria[key];
+            }
+            
+            // Fallback to local loading
+            const data = await this.loadCSV(tableName);
+            
+            return data.filter(record => {
+                return Object.keys(criteria).every(key => {
+                    return record[key] === criteria[key];
+                });
             });
-        });
+        } catch (error) {
+            console.error('Error in findBy:', error);
+            // Try fallback
+            const data = await this.loadCSV(tableName);
+            
+            return data.filter(record => {
+                return Object.keys(criteria).every(key => {
+                    return record[key] === criteria[key];
+                });
+            });
+        }
     }
 
     // Get all records from table
@@ -341,25 +393,51 @@ class CSVDataAccess {
 
     // Simulate adding a record
     async simulateAdd(tableName, record) {
-        const data = await this.loadCSV(tableName);
-        const schemas = await this.loadSchemas();
-        const primaryKey = schemas.table_schemas?.[tableName]?.primary_key || 'id';
-        
-        // Generate ID if not provided
-        if (!record[primaryKey]) {
-            record[primaryKey] = this.generateUUID();
+        try {
+            const schemas = await this.loadSchemas();
+            const primaryKey = schemas.table_schemas?.[tableName]?.primary_key || 'id';
+            
+            // Generate ID if not provided (for UUID-based tables)
+            if (!record[primaryKey] && primaryKey.endsWith('_id') && primaryKey !== 'user_id') {
+                record[primaryKey] = this.generateUUID();
+            }
+            
+            // Add timestamps
+            if (!record.created_at) {
+                record.created_at = this.formatDate(new Date());
+            }
+            record.updated_at = this.formatDate(new Date());
+            
+            if (this.useBackend) {
+                // Use backend API
+                const response = await fetch(`${this.backendURL}/api/tables/${tableName}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(record)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success) {
+                        // Clear cache to force reload
+                        this.cache.delete(tableName);
+                        return result.data;
+                    }
+                }
+            }
+            
+            // Fallback to localStorage
+            const data = await this.loadCSV(tableName);
+            data.push(record);
+            await this.simulateWrite(tableName, data);
+            
+            return record;
+        } catch (error) {
+            console.error('Error in simulateAdd:', error);
+            throw error;
         }
-        
-        // Add timestamps
-        if (!record.created_at) {
-            record.created_at = this.formatDate(new Date());
-        }
-        record.updated_at = this.formatDate(new Date());
-        
-        data.push(record);
-        await this.simulateWrite(tableName, data);
-        
-        return record;
     }
 
     // Simulate updating a record

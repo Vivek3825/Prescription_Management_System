@@ -1,6 +1,7 @@
 // Global state management
 let currentUser = null;
 let currentStep = 1;
+let prescriptionsList = []; // Array to store multiple prescriptions during signup
 let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let medications = [];
@@ -73,6 +74,7 @@ function showSignup() {
     closeModal();
     document.getElementById('signupModal').classList.add('active');
     currentStep = 1;
+    prescriptionsList = []; // Reset prescriptions list
     updateStepIndicator();
     showStep(1);
     setTimeout(() => {
@@ -125,61 +127,42 @@ async function handleLogin(event) {
             return;
         }
 
-        // Find user in database
-        const users = await csvDB.findBy('users', { email: email });
+        // Find user in authentication table
+        const authUsers = await csvDB.findBy('authentication', { email: email });
         
-        if (users.length === 0) {
+        if (authUsers.length === 0) {
             hideLoadingState();
             showNotification('User not found', 'error');
             return;
         }
         
-        const user = users[0];
+        const authUser = authUsers[0];
         
-        // Get user profile data with error handling
-        const userWithProfile = await csvDB.getUserWithProfile(user.user_id);
+        // Get user info from info table
+        const infoUsers = await csvDB.findBy('info', { user_id: authUser.user_id });
         
-        if (!userWithProfile) {
+        if (infoUsers.length === 0) {
             hideLoadingState();
             showNotification('User profile not found', 'error');
             return;
         }
-
-        // Handle case where profile might be missing
-        const profile = userWithProfile.profile || {
-            first_name: 'Unknown',
-            last_name: 'User',
-            date_of_birth: '1990-01-01',
-            gender: 'prefer_not_to_say',
-            weight_kg: 70,
-            height_cm: 170,
-            phone_number: ''
-        };
+        
+        const userInfo = infoUsers[0];
         
         // Create unified user object compatible with frontend
         currentUser = {
-            user_id: user.user_id,
-            name: `${profile.first_name} ${profile.last_name}`,
-            email: user.email,
-            age: calculateAge(profile.date_of_birth),
-            gender: profile.gender,
-            weight: profile.weight_kg || 70,
-            height: profile.height_cm || 170,
-            contact: profile.phone_number || '',
-            bmi: calculateBMI(profile.weight_kg || 70, profile.height_cm || 170),
-            medicalCondition: '', // Will be loaded separately
-            account_status: user.account_status,
-            created_at: user.created_at
+            user_id: authUser.user_id,
+            name: userInfo.name,
+            email: authUser.email,
+            age: userInfo.age,
+            gender: userInfo.gender,
+            weight: userInfo.weight,
+            height: userInfo.height,
+            contact: userInfo.contact_no,
+            bmi: userInfo.bmi,
+            medicalCondition: 'No medical conditions reported', // Can be loaded separately if needed
+            account_status: 'active'
         };
-        
-        // Load medical conditions with error handling
-        try {
-            const conditions = await csvDB.findBy('user_medical_conditions', { user_id: user.user_id });
-            currentUser.medicalCondition = conditions.map(c => c.condition_name).join(', ') || 'No medical conditions reported';
-        } catch (conditionError) {
-            console.warn('Error loading medical conditions:', conditionError);
-            currentUser.medicalCondition = 'No medical conditions reported';
-        }
         
         localStorage.setItem('prescripcare_user', JSON.stringify(currentUser));
         closeModal();
@@ -235,85 +218,99 @@ async function handleSignup(event) {
     try {
         // Collect all form data
         const fullName = document.getElementById('fullName').value;
-        const nameParts = fullName.split(' ');
-        const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(' ') || '';
+        const email = document.getElementById('email').value;
+        const age = parseInt(document.getElementById('age').value);
+        const gender = document.getElementById('gender').value;
+        const contact = document.getElementById('contactNo').value;
+        const weight = parseFloat(document.getElementById('weight').value);
+        const height = parseInt(document.getElementById('height').value);
+        const medicalCondition = document.getElementById('medicalCondition').value;
+        const password = document.getElementById('password').value;
         
-        const formData = {
-            email: document.getElementById('email').value,
-            age: parseInt(document.getElementById('age').value),
-            gender: document.getElementById('gender').value,
-            contact: document.getElementById('contactNo').value,
-            weight: parseFloat(document.getElementById('weight').value),
-            height: parseInt(document.getElementById('height').value),
-            medicalCondition: document.getElementById('medicalCondition').value,
-            password: document.getElementById('password').value
+        // Calculate BMI
+        const heightInMeters = height / 100;
+        const bmi = parseFloat((weight / (heightInMeters * heightInMeters)).toFixed(1));
+        
+        // Generate user ID from email (part before @)
+        const userId = email.split('@')[0];
+        
+        // 1. Create authentication record
+        const authRecord = {
+            user_id: userId,
+            email: email,
+            password: `$2b$12$${btoa(password).replace(/[=+/]/g, 'x')}` // Simple hash for demo
         };
         
-        // Calculate BMI and date of birth
-        const heightInMeters = formData.height / 100;
-        const bmi = parseFloat((formData.weight / (heightInMeters * heightInMeters)).toFixed(1));
-        const dateOfBirth = new Date();
-        dateOfBirth.setFullYear(dateOfBirth.getFullYear() - formData.age);
+        await csvDB.simulateAdd('authentication', authRecord);
         
-        // Create user record
-        const newUser = {
-            email: formData.email,
-            password_hash: `$2b$12$${btoa(formData.password).replace(/[=+/]/g, 'x')}`, // Simple hash for demo
-            email_verified: true,
-            account_status: 'active',
-            two_factor_enabled: false
+        // 2. Create info record
+        const infoRecord = {
+            user_id: userId,
+            name: fullName,
+            age: age,
+            gender: gender,
+            weight: weight,
+            height: height,
+            contact_no: contact,
+            email_id: email,
+            bmi: bmi
         };
         
-        const addedUser = await csvDB.simulateAdd('users', newUser);
+        await csvDB.simulateAdd('info', infoRecord);
         
-        // Create user profile
-        const newProfile = {
-            user_id: addedUser.user_id,
-            first_name: firstName,
-            last_name: lastName,
-            date_of_birth: formatDatabaseDate(dateOfBirth),
-            gender: formData.gender,
-            phone_number: formData.contact,
-            height_cm: formData.height,
-            weight_kg: formData.weight,
-            blood_type: 'unknown',
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-            preferred_language: 'en'
-        };
-        
-        await csvDB.simulateAdd('user_profiles', newProfile);
-        
-        // Add medical condition if provided
-        if (formData.medicalCondition.trim()) {
-            const condition = {
-                user_id: addedUser.user_id,
-                condition_name: formData.medicalCondition,
-                diagnosed_date: formatDatabaseDate(new Date()),
-                severity: 'unknown',
-                status: 'active'
-            };
-            
-            await csvDB.simulateAdd('user_medical_conditions', condition);
+        // 3. Create prescription records - save each prescription as a separate row
+        console.log('📋 Prescriptions to save:', prescriptionsList.length, prescriptionsList);
+        if (prescriptionsList.length > 0) {
+            for (const prescription of prescriptionsList) {
+                const prescriptionRecord = {
+                    user_id: userId,
+                    medicine_name: prescription.medicine_name,
+                    frequency: prescription.frequency,
+                    start_date: prescription.start_date,
+                    end_date: prescription.end_date,
+                    dose: prescription.dose,
+                    doctor_name: prescription.doctor_name
+                };
+                
+                console.log('💊 Saving prescription:', prescriptionRecord);
+                await csvDB.simulateAdd('prescription', prescriptionRecord);
+            }
+            console.log('✅ All prescriptions saved!');
+        } else {
+            console.log('⚠️ No prescriptions to save - prescriptionsList is empty');
         }
+        
+        // 4. Create progress record
+        const progressRecord = {
+            user_id: userId,
+            pending_dose: 0,
+            continue_dose: 0,
+            upcoming_dose: 0,
+            completed_dose: 0
+        };
+        
+        await csvDB.simulateAdd('progress', progressRecord);
         
         // Create user object for frontend
         currentUser = {
-            user_id: addedUser.user_id,
+            user_id: userId,
             name: fullName,
-            email: formData.email,
-            age: formData.age,
-            gender: formData.gender,
-            weight: formData.weight,
-            height: formData.height,
-            contact: formData.contact,
+            email: email,
+            age: age,
+            gender: gender,
+            weight: weight,
+            height: height,
+            contact: contact,
             bmi: bmi,
-            medicalCondition: formData.medicalCondition || 'No medical conditions reported',
-            account_status: 'active',
-            created_at: addedUser.created_at
+            medicalCondition: medicalCondition || 'No medical conditions reported',
+            account_status: 'active'
         };
         
         localStorage.setItem('prescripcare_user', JSON.stringify(currentUser));
+        
+        // Reset prescriptions list after successful signup
+        prescriptionsList = [];
+        
         closeModal();
         showDashboard();
         showNotification('Account created successfully!', 'success');
@@ -336,7 +333,7 @@ function nextStep() {
         return;
     }
     
-    if (currentStep < 3) {
+    if (currentStep < 4) {
         currentStep++;
         updateStepIndicator();
         showStep(currentStep);
@@ -366,8 +363,114 @@ function showStep(step) {
     const submitBtn = document.getElementById('submitBtn');
     
     prevBtn.style.display = step === 1 ? 'none' : 'block';
-    nextBtn.style.display = step === 3 ? 'none' : 'block';
-    submitBtn.style.display = step === 3 ? 'block' : 'none';
+    nextBtn.style.display = step === 4 ? 'none' : 'block';
+    submitBtn.style.display = step === 4 ? 'block' : 'none';
+    
+    // If moving to step 4, update prescriptions display
+    if (step === 4) {
+        updatePrescriptionsDisplay();
+    }
+}
+
+// Add prescription to the list
+function addPrescription() {
+    const medicineName = document.getElementById('medicineName').value.trim();
+    const dose = document.getElementById('dose').value.trim();
+    const frequency = document.getElementById('frequency').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const doctorName = document.getElementById('doctorName').value.trim();
+    
+    // Validate required fields
+    if (!medicineName) {
+        showNotification('Please enter medicine name', 'error');
+        return;
+    }
+    
+    // Create prescription object
+    const prescription = {
+        id: Date.now(), // Unique ID for removal
+        medicine_name: medicineName,
+        dose: dose || 'As prescribed',
+        frequency: frequency || 'As needed',
+        start_date: startDate || formatDatabaseDate(new Date()),
+        end_date: endDate || null,
+        doctor_name: doctorName || 'Not specified'
+    };
+    
+    // Add to list
+    prescriptionsList.push(prescription);
+    
+    console.log('✅ Prescription added to list:', prescription);
+    console.log('📊 Total prescriptions now:', prescriptionsList.length);
+    
+    // Clear form
+    document.getElementById('medicineName').value = '';
+    document.getElementById('dose').value = '';
+    document.getElementById('frequency').value = '';
+    document.getElementById('startDate').value = '';
+    document.getElementById('endDate').value = '';
+    document.getElementById('doctorName').value = '';
+    
+    // Update display
+    updatePrescriptionsDisplay();
+    
+    showNotification(`${medicineName} added successfully!`, 'success');
+}
+
+// Remove prescription from the list
+function removePrescription(prescriptionId) {
+    prescriptionsList = prescriptionsList.filter(p => p.id !== prescriptionId);
+    updatePrescriptionsDisplay();
+    showNotification('Prescription removed', 'info');
+}
+
+// Update the prescriptions display
+function updatePrescriptionsDisplay() {
+    const listContainer = document.getElementById('addedPrescriptionsList');
+    const prescriptionsContainer = document.getElementById('prescriptionsList');
+    const countElement = document.getElementById('prescriptionCount');
+    
+    if (prescriptionsList.length === 0) {
+        listContainer.style.display = 'none';
+        return;
+    }
+    
+    listContainer.style.display = 'block';
+    countElement.textContent = prescriptionsList.length;
+    
+    prescriptionsContainer.innerHTML = prescriptionsList.map(prescription => `
+        <div class="prescription-item">
+            <div class="prescription-item-header">
+                <div>
+                    <div class="prescription-item-title">
+                        <i class="fas fa-pills"></i> ${prescription.medicine_name}
+                    </div>
+                </div>
+                <button class="prescription-remove-btn" onclick="removePrescription(${prescription.id})">
+                    <i class="fas fa-trash"></i> Remove
+                </button>
+            </div>
+            <div class="prescription-item-details">
+                <div class="prescription-item-detail">
+                    <i class="fas fa-capsules"></i>
+                    <span>Dose: ${prescription.dose}</span>
+                </div>
+                <div class="prescription-item-detail">
+                    <i class="fas fa-clock"></i>
+                    <span>${prescription.frequency}</span>
+                </div>
+                <div class="prescription-item-detail">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>Start: ${prescription.start_date}</span>
+                </div>
+                <div class="prescription-item-detail">
+                    <i class="fas fa-user-md"></i>
+                    <span>Dr. ${prescription.doctor_name}</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
 }
 
 function updateStepIndicator() {
@@ -420,7 +523,7 @@ async function validateCurrentStep() {
             
             // Check if email already exists
             try {
-                const existingUsers = await csvDB.findBy('users', { email: email });
+                const existingUsers = await csvDB.findBy('authentication', { email: email });
                 if (existingUsers.length > 0) {
                     showNotification('Email already exists. Please use a different email.', 'error');
                     return false;

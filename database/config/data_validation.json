@@ -45,10 +45,13 @@
       }
     },
     "required_fields": {
-      "users": ["user_id", "email", "password_hash"],
-      "user_profiles": ["profile_id", "user_id", "first_name", "last_name", "date_of_birth", "gender"],
+      "authentication": ["user_id", "email", "password"],
+      "info": ["user_id", "name", "age", "gender", "weight", "height", "contact_no", "email_id", "bmi"],
+      "prescription": ["user_id", "medicine_name", "frequency", "start_date", "dose", "doctor_name"],
+      "progress": ["user_id"],
+      "drugs": ["drug_name"],
+      "lifestyle": ["user_id"],
       "drugs_master": ["drug_id", "drug_name"],
-      "user_medications": ["medication_id", "user_id", "drug_id", "strength", "dosage_form", "start_date"],
       "dose_events": ["event_id", "user_id", "medication_id", "scheduled_datetime", "status"]
     },
     "data_constraints": {
